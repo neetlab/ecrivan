@@ -6,17 +6,18 @@
 //
 
 import SwiftUI
+import SwiftSoup
 
 struct ContentView: View {
     @State private var content: String = "";
     
     var body: some View {
-        HStack(alignment: .top) {
+        VStack {
             TextField("HTML", text: $content, axis: .vertical)
                 .lineLimit(5...20)
                 .frame(minWidth: 0, maxWidth: .infinity)
-            Text("My content lives here")
-                .frame(minWidth: 0, maxWidth: .infinity)
+            Divider()
+            HTMLView(html: content)
         }
         .padding()
     }
