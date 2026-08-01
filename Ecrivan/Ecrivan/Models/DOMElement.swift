@@ -1,5 +1,5 @@
 //
-//  Document.swift
+//  DOMElement.swift
 //  Ecrivan
 //
 //  Created by Ryo Igarashi on 2026/08/01.

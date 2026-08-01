@@ -9,7 +9,10 @@ import SwiftUI
 import SwiftSoup
 
 struct ContentView: View {
-    @State private var content: String = "";
+    @State private var content: String = """
+    <h1>Hello World</h1>
+    <p>This is an example document</p>
+    """;
     
     var body: some View {
         VStack {
