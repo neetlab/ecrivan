@@ -16,7 +16,9 @@ struct HTMLView: NSViewRepresentable {
         
         stack.wantsLayer = true
         stack.layer?.backgroundColor = NSColor.white.cgColor
-        
+        stack.setAccessibilityElement(true)
+        stack.setAccessibilityRole(.webAreaRole)
+
         return stack
     }
 
@@ -33,26 +35,26 @@ struct HTMLView: NSViewRepresentable {
             return createH1View(text: text)
         case .p(let text):
             return createPView(text: text)
-        case .img(_, let src):
-            return createImgView(src: src)
+        case .img(let alt, let src):
+            return createImgView(src: src, alt: alt)
         }
     }
     
     private func createH1View(text: String) -> NSView {
-        let label = NSTextField(labelWithString: text)
-        label.font = .systemFont(ofSize: 32, weight: .bold)
-        label.textColor = NSColor.black
-        return label
+        let heading = NSView()
+        let label = appendText(text: text, parent: heading)
+        label.font = .systemFont(ofSize: 32)
+        return heading;
     }
     
     private func createPView(text: String) -> NSView {
-        let label = NSTextField(labelWithString: text)
+        let paragraph = NSView()
+        let label = appendText(text: text, parent: paragraph)
         label.font = .systemFont(ofSize: 16)
-        label.textColor = NSColor.black
-        return label
+        return paragraph
     }
     
-    private func createImgView(src: String) -> NSView {
+    private func createImgView(src: String, alt: String) -> NSView {
         let imageView = NSImageView()
         imageView.imageScaling = .scaleProportionallyUpOrDown
         if let url = URL(string: src) {
@@ -61,8 +63,21 @@ struct HTMLView: NSViewRepresentable {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }
+    
+    // これ難しすぎてよくわかっていません
+    private func appendText(text: String, parent: NSView) -> NSTextField {
+        let label = NSTextField(labelWithString: text)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        parent.addSubview(label)
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: parent.leadingAnchor),
+            label.trailingAnchor.constraint(equalTo: parent.trailingAnchor),
+            label.topAnchor.constraint(equalTo: parent.topAnchor),
+            label.bottomAnchor.constraint(equalTo: parent.bottomAnchor),
+        ])
+        return label
+    }
 }
-
 
 #Preview {
     HTMLView(

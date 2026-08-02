@@ -24,7 +24,7 @@ struct ContentView: View {
             TextField("HTML", text: $content, axis: .vertical)
                 .lineLimit(20...30)
                 .fixedSize(horizontal: true, vertical: false)
-                .font(Font.system(size: 12).monospaced())
+                .font(Font.system(size: 14).monospaced())
                 .frame(maxWidth: .infinity, alignment: .leading)
             HTMLView(html: content)
                 .fixedSize(horizontal: true, vertical: false)
