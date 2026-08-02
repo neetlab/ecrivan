@@ -43,7 +43,7 @@ struct HTMLView: NSViewRepresentable {
     private func createH1View(text: String) -> NSView {
         let heading = NSView()
         let label = appendText(text: text, parent: heading)
-        label.font = .systemFont(ofSize: 32)
+        label.font = .systemFont(ofSize: 32, weight: .bold)
         return heading;
     }
     
