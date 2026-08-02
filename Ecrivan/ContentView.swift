@@ -10,17 +10,26 @@ import SwiftSoup
 
 struct ContentView: View {
     @State private var content: String = """
-    <h1>Hello World</h1>
-    <p>This is an example document</p>
+    <html lang="ja">
+    <body>
+        <h1>私のウェブサイト</h1>
+        <p>これは私のウェブサイトです。ご覧いただきありがとうございます！</p>
+        <img alt="Welcome" src="https://i.imgur.com/rNsyw1E.png" />
+    </body>
+    </html>
     """;
     
     var body: some View {
-        VStack {
+        HStack(alignment: .top) {
             TextField("HTML", text: $content, axis: .vertical)
-                .lineLimit(5...20)
-                .frame(minWidth: 0, maxWidth: .infinity)
-            Divider()
+                .lineLimit(20...30)
+                .fixedSize(horizontal: true, vertical: false)
+                .font(Font.system(size: 12).monospaced())
+                .frame(maxWidth: .infinity, alignment: .leading)
             HTMLView(html: content)
+                .fixedSize(horizontal: true, vertical: false)
+                .frame(alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding()
     }

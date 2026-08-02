@@ -14,8 +14,7 @@ struct DOMElement: Identifiable {
     enum Kind {
         case p(text: String)
         case h1(text: String)
-        case h2(text: String)
-        case h3(text: String)
+        case img(alt: String, src: String)
     }
 }
 
@@ -33,12 +32,10 @@ func createDOMElements(input: String) -> [DOMElement] {
             case "h1":
                 let text = try child.text()
                 elements.append(DOMElement(kind: .h1(text: text)))
-            case "h2":
-                let text = try child.text()
-                elements.append(DOMElement(kind: .h2(text: text)))
-            case "h3":
-                let text = try child.text()
-                elements.append(DOMElement(kind: .h3(text: text)))
+            case "img":
+                let src = try child.attr("src")
+                let alt = try child.attr("alt")
+                elements.append(DOMElement(kind: .img(alt: alt, src: src)))
             default:
                 break;
             }
