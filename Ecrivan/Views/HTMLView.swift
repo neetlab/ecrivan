@@ -7,6 +7,11 @@ import SwiftSoup
 //
 import SwiftUI
 
+struct Stylesheet {
+  let fontSize: CGFloat
+  let fontWeight: NSFont.Weight
+}
+
 struct HTMLView: NSViewRepresentable {
   var html: String
 
@@ -15,8 +20,6 @@ struct HTMLView: NSViewRepresentable {
     stack.orientation = .vertical
     stack.alignment = .leading
 
-    stack.wantsLayer = true
-    stack.layer?.backgroundColor = NSColor.white.cgColor
     stack.setAccessibilityElement(true)
     stack.setAccessibilityRole(.webAreaRole)
 
@@ -24,69 +27,145 @@ struct HTMLView: NSViewRepresentable {
   }
 
   func updateNSView(_ stack: NSStackView, context: Context) {
-    stack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+    stack.views.forEach { $0.removeFromSuperview() }
 
     let document = try! SwiftSoup.parse(html)
     let body = document.body()!
+    print(body.getChildNodes())
 
-    for child in body.children() {
-      stack.addArrangedSubview(render(element: child))
+    for childNode in body.getChildNodes() {
+      if let subview = render(childNode) {
+        stack.addView(subview, in: .top)
+      }
     }
   }
 
-  func render(element: Element) -> NSView {
-    switch element.tagName() {
-    case "h1":
-      return createH1View(element: element)
-    case "p":
-      return createPView(element: element)
-    case "img":
-      return createImgView(element: element)
-    default:
-      return NSView()
+  func render(_ childNode: Node, stylesheet: Stylesheet? = nil) -> NSView? {
+    if let textNode = childNode as? TextNode {
+      if textNode.isBlank() {
+        return nil
+      }
+      print("trying to text " + textNode.text())
+      return createTextNode(textNode, stylesheet: stylesheet)
     }
+
+    if let element = childNode as? Element {
+      print("trying to render " + element.tagName())
+      switch element.tagName() {
+      case "h1":
+        return createH1View(element)
+      case "p":
+        return createPView(element)
+      case "img":
+        return createImgView(element)
+      case "form":
+        return createFormView(element)
+      default:
+        return nil
+      }
+    }
+
+    return nil
   }
 
-  private func createH1View(element: Element) -> NSView {
-    let heading = NSView()
-    let text = try! element.text()
-    let label = appendText(text: text, parent: heading)
-    label.font = .systemFont(ofSize: 32, weight: .bold)
+  private func createH1View(_ element: Element) -> NSView {
+    let heading = NSStackView()
+    heading.orientation = .vertical
+    heading.alignment = .leading
+    heading.distribution = .fill
+
+    heading.setAccessibilityElement(true)
+    heading.setAccessibilityRole(.headingRole)
+    heading.setAccessibilitySubrole(nil)
+    heading.setAccessibilityValue(1)
+
+    for childNode in element.getChildNodes() {
+      if let subview = render(
+        childNode,
+        stylesheet: Stylesheet(fontSize: 32, fontWeight: .bold)
+      ) {
+        heading.addArrangedSubview(subview)
+      }
+    }
+
     return heading
   }
 
-  private func createPView(element: Element) -> NSView {
-    let paragraph = NSView()
-    let text = try! element.text()
-    let label = appendText(text: text, parent: paragraph)
-    label.font = .systemFont(ofSize: 16)
+  private func createPView(_ element: Element) -> NSView {
+    let paragraph = NSStackView()
+    paragraph.orientation = .vertical
+    paragraph.alignment = .leading
+    paragraph.distribution = .fill
+
+    paragraph.setAccessibilityElement(true)
+    paragraph.setAccessibilityRole(.group)
+    paragraph.setAccessibilitySubrole(nil)
+
+    for childNode in element.getChildNodes() {
+      if let subview = render(childNode) {
+        paragraph.addArrangedSubview(subview)
+      }
+    }
+
     return paragraph
   }
 
-  private func createImgView(element: Element) -> NSView {
+  private func createImgView(_ element: Element) -> NSView {
     let src = try! element.attr("src")
     let alt = try! element.attr("alt")
 
-    let imageView = NSImageView()
-    imageView.imageScaling = .scaleProportionallyUpOrDown
+    let image = NSImageView()
+    image.imageScaling = .scaleProportionallyUpOrDown
     if let url = URL(string: src) {
-      imageView.image = NSImage(contentsOf: url)
+      image.image = NSImage(contentsOf: url)
     }
-    imageView.translatesAutoresizingMaskIntoConstraints = false
-    return imageView
+    image.translatesAutoresizingMaskIntoConstraints = false
+
+    image.setAccessibilityElement(true)
+    image.setAccessibilityRole(.image)
+    image.setAccessibilitySubrole(nil)
+    image.setAccessibilityLabel(alt)
+
+    return image
   }
 
-  // これ難しすぎてよくわかっていません
-  private func appendText(text: String, parent: NSView) -> NSTextField {
+  private func createFormView(_ element: Element) -> NSView {
+    let form = NSStackView()
+    form.orientation = .vertical
+    form.alignment = .leading
+    form.distribution = .fill
+
+    for childNode in element.getChildNodes() {
+      if let subview = render(childNode) {
+        form.addArrangedSubview(subview)
+      }
+    }
+
+    form.setAccessibilityElement(true)
+    form.setAccessibilityRole(.group)
+    form.setAccessibilitySubrole(
+      NSAccessibility.Subrole(rawValue: "AXLandmarkForm")
+    )
+
+    return form
+  }
+
+  private func createTextNode(
+    _ textNode: TextNode,
+    stylesheet: Stylesheet? = nil
+  )
+    -> NSView
+  {
+    let text = textNode.text()
     let label = NSTextField(labelWithString: text)
-    label.translatesAutoresizingMaskIntoConstraints = false
-    parent.addSubview(label)
-    NSLayoutConstraint.activate([
-      label.leadingAnchor.constraint(equalTo: parent.leadingAnchor),
-      label.trailingAnchor.constraint(equalTo: parent.trailingAnchor),
-      label.topAnchor.constraint(equalTo: parent.topAnchor),
-      label.bottomAnchor.constraint(equalTo: parent.bottomAnchor),
-    ])
+
+    if let stylesheet = stylesheet {
+      label.font = .systemFont(
+        ofSize: stylesheet.fontSize,
+        weight: stylesheet.fontWeight,
+      )
+    }
+
     return label
   }
 }
