@@ -1,3 +1,4 @@
+import SwiftSoup
 //
 //  HTMLView.swift
 //  Ecrivan
@@ -24,37 +25,48 @@ struct HTMLView: NSViewRepresentable {
 
   func updateNSView(_ stack: NSStackView, context: Context) {
     stack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-    for el in createDOMElements(input: html) {
-      stack.addArrangedSubview(view(for: el))
+
+    let document = try! SwiftSoup.parse(html)
+    let body = document.body()!
+
+    for child in body.children() {
+      stack.addArrangedSubview(render(element: child))
     }
   }
 
-  func view(for el: DOMElement) -> NSView {
-    switch el.kind {
-    case .h1(let text):
-      return createH1View(text: text)
-    case .p(let text):
-      return createPView(text: text)
-    case .img(let alt, let src):
-      return createImgView(src: src, alt: alt)
+  func render(element: Element) -> NSView {
+    switch element.tagName() {
+    case "h1":
+      return createH1View(element: element)
+    case "p":
+      return createPView(element: element)
+    case "img":
+      return createImgView(element: element)
+    default:
+      return NSView()
     }
   }
 
-  private func createH1View(text: String) -> NSView {
+  private func createH1View(element: Element) -> NSView {
     let heading = NSView()
+    let text = try! element.text()
     let label = appendText(text: text, parent: heading)
     label.font = .systemFont(ofSize: 32, weight: .bold)
     return heading
   }
 
-  private func createPView(text: String) -> NSView {
+  private func createPView(element: Element) -> NSView {
     let paragraph = NSView()
+    let text = try! element.text()
     let label = appendText(text: text, parent: paragraph)
     label.font = .systemFont(ofSize: 16)
     return paragraph
   }
 
-  private func createImgView(src: String, alt: String) -> NSView {
+  private func createImgView(element: Element) -> NSView {
+    let src = try! element.attr("src")
+    let alt = try! element.attr("alt")
+
     let imageView = NSImageView()
     imageView.imageScaling = .scaleProportionallyUpOrDown
     if let url = URL(string: src) {
