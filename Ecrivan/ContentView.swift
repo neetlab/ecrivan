@@ -12,9 +12,13 @@ struct ContentView: View {
   @State private var content: String = """
     <html lang="ja">
     <body>
-        <h1>私のウェブサイト</h1>
-        <p>これは私のウェブサイトです。ご覧いただきありがとうございます！</p>
-        <img alt="Welcome" src="https://i.imgur.com/rNsyw1E.png" />
+      <h1>私のウェブサイト</h1>
+      <p>これは私のウェブサイトです。ご覧いただきありがとうございます！</p>
+      <img alt="Welcome" src="https://i.imgur.com/rNsyw1E.png" />
+      <form>
+        <label for="name">お名前</label>
+        <input id="name" type="text" />
+      </form>
     </body>
     </html>
     """

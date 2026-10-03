@@ -60,6 +60,10 @@ struct HTMLView: NSViewRepresentable {
         return createImgView(element)
       case "form":
         return createFormView(element)
+      case "label":
+        return createLabelView(element)
+      case "input":
+        return createInputView(element)
       default:
         return nil
       }
@@ -148,6 +152,51 @@ struct HTMLView: NSViewRepresentable {
     )
 
     return form
+  }
+
+  private func createLabelView(_ element: Element) -> NSView {
+    let label = NSStackView()
+    label.orientation = .vertical
+    label.alignment = .leading
+    label.distribution = .fill
+
+    for childNode in element.getChildNodes() {
+      if let subview = render(childNode) {
+        label.addArrangedSubview(subview)
+      }
+    }
+
+    label.setAccessibilityElement(true)
+    label.setAccessibilityRole(.group)
+    label.setAccessibilitySubrole(nil)
+    label.setAccessibilityRoleDescription("グループ")
+
+    return label
+  }
+
+  private func createInputView(_ element: Element) -> NSView {
+    let input = NSTextField(labelWithString: "hello")
+    input.isEditable = true
+    
+    if try! element.attr("type") == "text" {
+      let id = element.id();
+      let document = element.ownerDocument()!
+      var name = "";
+      
+      do {
+        let labels = try document.select("label[for=\(id)]")
+        for label in labels {
+          let textualEquivalent = try label.text();
+          name += textualEquivalent;
+        }
+      } catch {
+      }
+      
+      input.setAccessibilityRole(.textField)
+      input.setAccessibilityLabel(name)
+    }
+    
+    return input
   }
 
   private func createTextNode(
