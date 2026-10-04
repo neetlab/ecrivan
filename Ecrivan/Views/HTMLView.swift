@@ -1,10 +1,10 @@
-import SwiftSoup
 //
 //  HTMLView.swift
 //  Ecrivan
 //
 //  Created by Ryo Igarashi on 2026/08/01.
 //
+import SwiftSoup
 import SwiftUI
 
 struct Stylesheet {
@@ -31,41 +31,43 @@ struct HTMLView: NSViewRepresentable {
 
     let document = try! SwiftSoup.parse(html)
     let body = document.body()!
-    print(body.getChildNodes())
+    let accessibilityTree = AccessibilityTree(element: document)
 
     for childNode in body.getChildNodes() {
-      if let subview = render(childNode) {
+      if let subview = render(childNode, accessibilityTree) {
         stack.addArrangedSubview(subview)
       }
     }
   }
 
-  func render(_ childNode: Node, stylesheet: Stylesheet? = nil) -> NSView? {
+  func render(
+    _ childNode: Node,
+    _ accessibilityTree: AccessibilityTree,
+    stylesheet: Stylesheet? = nil
+  ) -> NSView? {
     if let textNode = childNode as? TextNode {
       if textNode.isBlank() {
         return nil
       }
-      print("trying to text " + textNode.text())
       return createTextNode(textNode, stylesheet: stylesheet)
     }
 
     if let element = childNode as? Element {
-      print("trying to render " + element.tagName())
       switch element.tagName() {
       case "h1":
-        return createH1View(element)
+        return createH1View(element, accessibilityTree)
       case "p":
-        return createPView(element)
+        return createPView(element, accessibilityTree)
       case "img":
-        return createImgView(element)
+        return createImgView(element, accessibilityTree)
       case "form":
-        return createFormView(element)
+        return createFormView(element, accessibilityTree)
       case "label":
-        return createLabelView(element)
+        return createLabelView(element, accessibilityTree)
       case "input":
-        return createInputView(element)
+        return createInputView(element, accessibilityTree)
       case "button":
-        return createButtonView(element)
+        return createButtonView(element, accessibilityTree)
       default:
         return nil
       }
@@ -74,20 +76,22 @@ struct HTMLView: NSViewRepresentable {
     return nil
   }
 
-  private func createH1View(_ element: Element) -> NSView {
+  private func createH1View(
+    _ element: Element,
+    _ accessibilityTree: AccessibilityTree
+  ) -> NSView {
     let heading = NSStackView()
     heading.orientation = .vertical
     heading.alignment = .leading
     heading.distribution = .fill
 
-    heading.setAccessibilityElement(true)
-    heading.setAccessibilityRole(.headingRole)
-    heading.setAccessibilitySubrole(nil)
-    heading.setAccessibilityValue(1)
+    let accessibilityObject = accessibilityTree.getAccessibilityObject(element)
+    accessibilityObject?.mapToView(heading)
 
     for childNode in element.getChildNodes() {
       if let subview = render(
         childNode,
+        accessibilityTree,
         stylesheet: Stylesheet(fontSize: 32, fontWeight: .bold)
       ) {
         heading.addArrangedSubview(subview)
@@ -97,18 +101,20 @@ struct HTMLView: NSViewRepresentable {
     return heading
   }
 
-  private func createPView(_ element: Element) -> NSView {
+  private func createPView(
+    _ element: Element,
+    _ accessibilityTree: AccessibilityTree
+  ) -> NSView {
     let paragraph = NSStackView()
     paragraph.orientation = .vertical
     paragraph.alignment = .leading
     paragraph.distribution = .fill
 
-    paragraph.setAccessibilityElement(true)
-    paragraph.setAccessibilityRole(.group)
-    paragraph.setAccessibilitySubrole(nil)
+    let accessibilityObject = accessibilityTree.getAccessibilityObject(element)
+    accessibilityObject?.mapToView(paragraph)
 
     for childNode in element.getChildNodes() {
-      if let subview = render(childNode) {
+      if let subview = render(childNode, accessibilityTree) {
         paragraph.addArrangedSubview(subview)
       }
     }
@@ -116,9 +122,11 @@ struct HTMLView: NSViewRepresentable {
     return paragraph
   }
 
-  private func createImgView(_ element: Element) -> NSView {
+  private func createImgView(
+    _ element: Element,
+    _ accessibilityTree: AccessibilityTree
+  ) -> NSView {
     let src = try! element.attr("src")
-    let alt = try! element.attr("alt")
 
     let image = NSImageView()
     image.imageScaling = .scaleProportionallyUpOrDown
@@ -127,45 +135,47 @@ struct HTMLView: NSViewRepresentable {
     }
     image.translatesAutoresizingMaskIntoConstraints = false
 
-    image.setAccessibilityElement(true)
-    image.setAccessibilityRole(.image)
-    image.setAccessibilitySubrole(nil)
-    image.setAccessibilityLabel(alt)
+    let accessibilityObject = accessibilityTree.getAccessibilityObject(element)
+    accessibilityObject?.mapToView(image)
 
     return image
   }
 
-  private func createFormView(_ element: Element) -> NSView {
+  private func createFormView(
+    _ element: Element,
+    _ accessibilityTree: AccessibilityTree
+  ) -> NSView {
     let form = NSStackView()
     form.orientation = .vertical
     form.alignment = .leading
     form.distribution = .fill
 
     for childNode in element.getChildNodes() {
-      if let subview = render(childNode) {
+      if let subview = render(childNode, accessibilityTree) {
         form.addArrangedSubview(subview)
       }
     }
 
-    form.setAccessibilityElement(true)
-    form.setAccessibilityRole(.group)
-    form.setAccessibilitySubrole(
-      NSAccessibility.Subrole(rawValue: "AXLandmarkForm")
-    )
+    let accessibilityObject = accessibilityTree.getAccessibilityObject(element)
+    accessibilityObject?.mapToView(form)
 
     return form
   }
 
-  private func createLabelView(_ element: Element) -> NSView {
+  private func createLabelView(
+    _ element: Element,
+    _ accessibilityTree: AccessibilityTree
+  ) -> NSView {
     let label = NSStackView()
 
     for childNode in element.getChildNodes() {
-      if let subview = render(childNode) {
+      if let subview = render(childNode, accessibilityTree) {
         label.addArrangedSubview(subview)
       }
     }
 
-    label.setAccessibilityElement(true)
+    let accessibilityObject = accessibilityTree.getAccessibilityObject(element)
+    accessibilityObject?.mapToView(label)
     label.setAccessibilityRole(.group)
     label.setAccessibilitySubrole(nil)
     label.setAccessibilityRoleDescription("グループ")
@@ -173,7 +183,10 @@ struct HTMLView: NSViewRepresentable {
     return label
   }
 
-  private func createInputView(_ element: Element) -> NSView {
+  private func createInputView(
+    _ element: Element,
+    _ accessibilityTree: AccessibilityTree
+  ) -> NSView {
     let type = try! element.attr("type")
     switch type {
 
@@ -183,21 +196,10 @@ struct HTMLView: NSViewRepresentable {
       input.wantsLayer = true
       input.layer?.borderWidth = 1
       input.layer?.borderColor = NSColor.gray.cgColor
-
-      let id = element.id()
-      let document = element.ownerDocument()!
-      var name = ""
-
-      do {
-        let labels = try document.select("label[for=\(id)]")
-        for label in labels {
-          let textualEquivalent = try label.text()
-          name += textualEquivalent
-        }
-      } catch {
-      }
-      input.setAccessibilityRole(.textField)
-      input.setAccessibilityLabel(name)
+      let accessibilityObject = accessibilityTree.getAccessibilityObject(
+        element
+      )
+      accessibilityObject?.mapToView(input)
       return input
 
     case "checkbox":
@@ -207,9 +209,10 @@ struct HTMLView: NSViewRepresentable {
       checkbox.layer?.borderColor = NSColor.gray.cgColor
       checkbox.widthAnchor.constraint(equalToConstant: 16).isActive = true
       checkbox.heightAnchor.constraint(equalToConstant: 16).isActive = true
-      checkbox.setAccessibilityElement(true)
-      checkbox.setAccessibilityRole(.checkBox)
-      checkbox.setAccessibilityValue(0)
+      let accessibilityObject = accessibilityTree.getAccessibilityObject(
+        element
+      )
+      accessibilityObject?.mapToView(checkbox)
       return checkbox
 
     default:
@@ -217,28 +220,30 @@ struct HTMLView: NSViewRepresentable {
     }
   }
 
-  private func createButtonView(_ element: Element) -> NSView {
+  private func createButtonView(
+    _ element: Element,
+    _ accessibilityTree: AccessibilityTree
+  ) -> NSView {
     let button = NSStackView()
-    
+
     button.wantsLayer = true
     button.layer?.backgroundColor = NSColor.gray.cgColor
     button.layer?.borderWidth = 1
     button.layer?.borderColor = NSColor.black.cgColor
     button.edgeInsets = NSEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
 
+    let accessibilityObject = accessibilityTree.getAccessibilityObject(element)
+    accessibilityObject?.mapToView(button)
+    
     for childNode in element.getChildNodes() {
-      if let subview = render(childNode) {
+      if let subview = render(childNode, accessibilityTree) {
         button.addArrangedSubview(subview)
       }
     }
 
-    button.setAccessibilityElement(true)
-    button.setAccessibilityRole(.button)
-    button.setAccessibilitySubrole(nil)
-
     return button
   }
-  
+
   private func createTextNode(
     _ textNode: TextNode,
     stylesheet: Stylesheet? = nil
