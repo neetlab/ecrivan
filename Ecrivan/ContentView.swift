@@ -18,6 +18,10 @@ struct ContentView: View {
       <form>
         <label for="name">お名前</label>
         <input id="name" type="text" />
+        <label for="tos">
+          <input type="checkbox" id="tos" />
+          利用規約に同意する
+        </label>
       </form>
     </body>
     </html>
@@ -31,7 +35,7 @@ struct ContentView: View {
         .font(Font.system(size: 14).monospaced())
         .frame(maxWidth: .infinity, alignment: .leading)
       HTMLView(html: content)
-        .fixedSize(horizontal: true, vertical: false)
+        .fixedSize(horizontal: true, vertical: true)
         .frame(alignment: .leading)
         .frame(maxWidth: .infinity, alignment: .leading)
     }

@@ -35,7 +35,7 @@ struct HTMLView: NSViewRepresentable {
 
     for childNode in body.getChildNodes() {
       if let subview = render(childNode) {
-        stack.addView(subview, in: .top)
+        stack.addArrangedSubview(subview)
       }
     }
   }
@@ -64,6 +64,8 @@ struct HTMLView: NSViewRepresentable {
         return createLabelView(element)
       case "input":
         return createInputView(element)
+      case "button":
+        return createButtonView(element)
       default:
         return nil
       }
@@ -156,9 +158,6 @@ struct HTMLView: NSViewRepresentable {
 
   private func createLabelView(_ element: Element) -> NSView {
     let label = NSStackView()
-    label.orientation = .vertical
-    label.alignment = .leading
-    label.distribution = .fill
 
     for childNode in element.getChildNodes() {
       if let subview = render(childNode) {
@@ -175,30 +174,71 @@ struct HTMLView: NSViewRepresentable {
   }
 
   private func createInputView(_ element: Element) -> NSView {
-    let input = NSTextField(labelWithString: "hello")
-    input.isEditable = true
-    
-    if try! element.attr("type") == "text" {
-      let id = element.id();
+    let type = try! element.attr("type")
+    switch type {
+
+    case "text", "email":
+      let input = NSTextField(labelWithString: "hello")
+      input.isEditable = true
+      input.wantsLayer = true
+      input.layer?.borderWidth = 1
+      input.layer?.borderColor = NSColor.gray.cgColor
+
+      let id = element.id()
       let document = element.ownerDocument()!
-      var name = "";
-      
+      var name = ""
+
       do {
         let labels = try document.select("label[for=\(id)]")
         for label in labels {
-          let textualEquivalent = try label.text();
-          name += textualEquivalent;
+          let textualEquivalent = try label.text()
+          name += textualEquivalent
         }
       } catch {
       }
-      
       input.setAccessibilityRole(.textField)
       input.setAccessibilityLabel(name)
+      return input
+
+    case "checkbox":
+      let checkbox = NSView()
+      checkbox.wantsLayer = true
+      checkbox.layer?.borderWidth = 1
+      checkbox.layer?.borderColor = NSColor.gray.cgColor
+      checkbox.widthAnchor.constraint(equalToConstant: 16).isActive = true
+      checkbox.heightAnchor.constraint(equalToConstant: 16).isActive = true
+      checkbox.setAccessibilityElement(true)
+      checkbox.setAccessibilityRole(.checkBox)
+      checkbox.setAccessibilityValue(0)
+      return checkbox
+
+    default:
+      return NSView()
     }
-    
-    return input
   }
 
+  private func createButtonView(_ element: Element) -> NSView {
+    let button = NSStackView()
+    
+    button.wantsLayer = true
+    button.layer?.backgroundColor = NSColor.gray.cgColor
+    button.layer?.borderWidth = 1
+    button.layer?.borderColor = NSColor.black.cgColor
+    button.edgeInsets = NSEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
+
+    for childNode in element.getChildNodes() {
+      if let subview = render(childNode) {
+        button.addArrangedSubview(subview)
+      }
+    }
+
+    button.setAccessibilityElement(true)
+    button.setAccessibilityRole(.button)
+    button.setAccessibilitySubrole(nil)
+
+    return button
+  }
+  
   private func createTextNode(
     _ textNode: TextNode,
     stylesheet: Stylesheet? = nil
@@ -225,6 +265,7 @@ struct HTMLView: NSViewRepresentable {
       <h1>私のウェブサイト</h1>
       <p>これは私のウェブサイトです</p>
       <img alt="ようこそ" src="https://i.imgur.com/rNsyw1E.png" />
+      <input type="checkbox" />
       """
   )
 }
