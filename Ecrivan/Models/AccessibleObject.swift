@@ -19,7 +19,7 @@ struct AccessibleObject {
   // CORE-AAM で対応すべき内容。でもここで書くべきではないような気もする。
   func mapToView(_ view: NSView) {
     if self.`aria-hidden` {
-      view.setAccessibilityElement(false)
+      view.setAccessibilityChildren([])
     }
     
     if role == .heading, self.`aria-level` != nil {
