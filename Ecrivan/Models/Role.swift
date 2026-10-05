@@ -18,6 +18,7 @@ enum Role {
   case button
   case generic
 
+  // HTML-AAM に書かれているやつ。ここでやらんでもよくないか。
   init(element: Element) {
     let tagName = element.tagName()
     switch tagName {
@@ -29,8 +30,6 @@ enum Role {
       self = .image
     case "form":
       self = .form
-    // case "label":
-    // self = .group
     case "input":
       let type = try! element.attr("type")
       switch type {

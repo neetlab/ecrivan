@@ -6,16 +6,16 @@
 //
 import AppKit
 
-struct AccessibilityObject {
+struct AccessibleObject {
   var role: Role
   var name: String? = nil
   var description: String? = nil
-  var children: [AccessibilityObject] = []
+  var children: [AccessibleObject] = []
 
-  // var `aria-hidden`: Bool = false
-
+  //  var `aria-hidden`: Bool = false
   var `aria-level`: Int? = nil
 
+  // CORE-AAM で対応すべき内容。でもここで書くべきではないような気もする。
   func mapToView(_ view: NSView) {
     view.setAccessibilityElement(true)
 

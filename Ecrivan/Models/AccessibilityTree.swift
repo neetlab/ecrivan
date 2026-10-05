@@ -7,46 +7,46 @@
 import SwiftSoup
 
 struct AccessibilityTree {
-  private let root: AccessibilityObject
-  private let domToAccessibilityObject: [Node: AccessibilityObject]
+  private let root: AccessibleObject
+  private let domToAccessibleObject: [Node: AccessibleObject]
 
   init(element: Element) {
-    var map = [Node: AccessibilityObject]()
-    let child = Self.makeAccessibilityObject(element: element, map: &map)
+    var map = [Node: AccessibleObject]()
+    let child = Self.makeAccessibleObject(element: element, map: &map)
 
-    var root = AccessibilityObject(role: .document)
+    var root = AccessibleObject(role: .document)
     root.children.append(child)
 
     self.root = root
-    self.domToAccessibilityObject = map
+    self.domToAccessibleObject = map
   }
   
-  func getAccessibilityObject(_ node: Node) -> AccessibilityObject? {
-    return domToAccessibilityObject[node]
+  func getAccessibleObject(_ node: Node) -> AccessibleObject? {
+    return domToAccessibleObject[node]
   }
 
-  private static func makeAccessibilityObject(
+  private static func makeAccessibleObject(
     element: Element,
-    map: inout [Node: AccessibilityObject]
-  ) -> AccessibilityObject {
-    var accessibilityObject = AccessibilityObject(
+    map: inout [Node: AccessibleObject]
+  ) -> AccessibleObject {
+    var accessibleObject = AccessibleObject(
       role: Role(element: element),
       name: getAccessibleName(element: element),
       description: getAccessibleDescription(element: element)
     )
 
     if element.tagName() == "h1" {
-      accessibilityObject.`aria-level` = 1
+      accessibleObject.`aria-level` = 1
     }
 
     for child in element.children() {
-      accessibilityObject.children.append(
-        makeAccessibilityObject(element: child, map: &map)
+      accessibleObject.children.append(
+        makeAccessibleObject(element: child, map: &map)
       )
     }
 
-    map[element] = accessibilityObject
-    return accessibilityObject
+    map[element] = accessibleObject
+    return accessibleObject
   }
 }
 
