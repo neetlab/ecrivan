@@ -67,6 +67,8 @@ final class HTMLRenderer {
     view.orientation = .vertical
     view.alignment = .leading
     view.distribution = .fill
+    view.wantsLayer = true
+    view.layer?.backgroundColor = NSColor.white.cgColor
 
     let title = try! document.title()
     view.setAccessibilityRole(.webAreaRole)
@@ -190,6 +192,7 @@ final class HTMLRenderer {
   {
     let text = textNode.text()
     let view = NSTextField(labelWithString: text)
+    view.textColor = NSColor.black
 
     if let stylesheet = stylesheet {
       view.font = .systemFont(
