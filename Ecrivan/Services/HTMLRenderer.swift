@@ -94,8 +94,7 @@ final class HTMLRenderer {
     view.orientation = .vertical
     view.alignment = .leading
     view.distribution = .fill
-    let accessibilityObject = accessibilityTree.getAccessibleObject(element)
-    accessibilityObject?.mapToView(view)
+    accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
     renderChildNodesAsSubview(node: element, view: view)
     return view
   }
@@ -105,8 +104,7 @@ final class HTMLRenderer {
     view.orientation = .vertical
     view.alignment = .leading
     view.distribution = .fill
-    let accessibilityObject = accessibilityTree.getAccessibleObject(element)
-    accessibilityObject?.mapToView(view)
+    accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
     let stylesheet = Stylesheet(largeText: true)
     renderChildNodesAsSubview(node: element, view: view, stylesheet: stylesheet)
     return view
@@ -115,24 +113,22 @@ final class HTMLRenderer {
   private func createImageView(_ element: Element) -> NSView {
     let src = try! element.attr("src")
 
-    let image = NSImageView()
-    image.imageScaling = .scaleProportionallyUpOrDown
+    let view = NSImageView()
+    view.imageScaling = .scaleProportionallyUpOrDown
     if let url = URL(string: src) {
-      image.image = NSImage(contentsOf: url)
+      view.image = NSImage(contentsOf: url)
     }
-    image.translatesAutoresizingMaskIntoConstraints = false
+    view.translatesAutoresizingMaskIntoConstraints = false
 
-    let accessibilityObject = accessibilityTree.getAccessibleObject(element)
-    accessibilityObject?.mapToView(image)
+    accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
 
-    return image
+    return view
   }
 
   private func createLabelView(_ element: Element) -> NSView {
     let view = NSStackView()
     renderChildNodesAsSubview(node: element, view: view)
-    let accessibilityObject = accessibilityTree.getAccessibleObject(element)
-    accessibilityObject?.mapToView(view)
+    accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
     view.setAccessibilityRole(.group)
     view.setAccessibilitySubrole(nil)
     view.setAccessibilityRoleDescription("グループ")
@@ -143,36 +139,33 @@ final class HTMLRenderer {
     let type = try! element.attr("type")
     switch type {
     case "text", "email":
-      let input = NSTextField(labelWithString: "hello")
-      input.isEditable = true
-      input.wantsLayer = true
-      input.layer?.borderWidth = 1
-      input.layer?.borderColor = NSColor.gray.cgColor
-      let accessibilityObject = accessibilityTree.getAccessibleObject(element)
-      accessibilityObject?.mapToView(input)
-      return input
+      let view = NSTextField(labelWithString: "hello")
+      view.isEditable = true
+      view.wantsLayer = true
+      view.layer?.borderWidth = 1
+      view.layer?.borderColor = NSColor.gray.cgColor
+      accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
+      return view
     case "password":
-      let input = NSTextField(labelWithString: "hello")
-      input.isEditable = true
-      input.wantsLayer = true
-      input.layer?.borderWidth = 1
-      input.layer?.borderColor = NSColor.gray.cgColor
-      let accessibilityObject = accessibilityTree.getAccessibleObject(element)
-      accessibilityObject?.mapToView(input)
-      input.setAccessibilityRole(.textField)
-      input.setAccessibilitySubrole(.secureTextField)
-      input.setAccessibilityRoleDescription("secure text field")
-      return input
+      let view = NSTextField(labelWithString: "hello")
+      view.isEditable = true
+      view.wantsLayer = true
+      view.layer?.borderWidth = 1
+      view.layer?.borderColor = NSColor.gray.cgColor
+      accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
+      view.setAccessibilityRole(.textField)
+      view.setAccessibilitySubrole(.secureTextField)
+      view.setAccessibilityRoleDescription("secure text field")
+      return view
     case "checkbox":
-      let checkbox = NSView()
-      checkbox.wantsLayer = true
-      checkbox.layer?.borderWidth = 1
-      checkbox.layer?.borderColor = NSColor.gray.cgColor
-      checkbox.widthAnchor.constraint(equalToConstant: 16).isActive = true
-      checkbox.heightAnchor.constraint(equalToConstant: 16).isActive = true
-      let accessibilityObject = accessibilityTree.getAccessibleObject(element)
-      accessibilityObject?.mapToView(checkbox)
-      return checkbox
+      let view = NSView()
+      view.wantsLayer = true
+      view.layer?.borderWidth = 1
+      view.layer?.borderColor = NSColor.gray.cgColor
+      view.widthAnchor.constraint(equalToConstant: 16).isActive = true
+      view.heightAnchor.constraint(equalToConstant: 16).isActive = true
+      accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
+      return view
     default:
       return nil
     }
@@ -187,8 +180,7 @@ final class HTMLRenderer {
     view.layer?.borderColor = NSColor.black.cgColor
     view.edgeInsets = NSEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
 
-    let accessibilityObject = accessibilityTree.getAccessibleObject(element)
-    accessibilityObject?.mapToView(view)
+    accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
     renderChildNodesAsSubview(node: element, view: view)
 
     return view

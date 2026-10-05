@@ -6,95 +6,21 @@
 //
 import SwiftSoup
 
-struct AccessibilityTree {
-  private let root: AccessibleObject
-  private let domToAccessibleObject: [Node: AccessibleObject]
+class AccessibilityTree {
+  private var root: AccessibleObject?
+  private var mapping: [Element: AccessibleObject]
 
   init(element: Element) {
-    var map = [Node: AccessibleObject]()
-    let child = Self.makeAccessibleObject(element: element, map: &map)
-
-    var root = AccessibleObject(role: .document)
-    root.children.append(child)
-
-    self.root = root
-    self.domToAccessibleObject = map
+    self.root = nil
+    self.mapping = [Element: AccessibleObject]()
+    self.root = AccessibleObject(element, self)
+  }
+  
+  func setAccessibleObject(_ element: Element, _ accessibleObject: AccessibleObject) {
+    self.mapping[element] = accessibleObject
   }
 
-  func getAccessibleObject(_ node: Node) -> AccessibleObject? {
-    return domToAccessibleObject[node]
+  func getAccessibleObject(_ element: Element) -> AccessibleObject? {
+    return mapping[element]
   }
-
-  private static func makeAccessibleObject(
-    element: Element,
-    map: inout [Node: AccessibleObject]
-  ) -> AccessibleObject {
-    var accessibleObject = AccessibleObject(
-      role: Role(element: element),
-      name: getAccessibleName(element: element),
-      description: getAccessibleDescription(element: element)
-    )
-
-    if element.tagName() == "h1" {
-      accessibleObject.`aria-level` = 1
-    }
-
-    if element.tagName() == "input", let type = try? element.attr("type"), type == "checkbox"
-    {
-      if let value = try? element.attr("value") {
-        accessibleObject.`aria-checked` = value
-      } else {
-        accessibleObject.`aria-checked` = "false"
-      }
-    }
-
-    if let `aria-hidden` = try? element.attr("aria-hidden"),
-      `aria-hidden` == "true"
-    {
-      accessibleObject.`aria-hidden` = true
-    }
-
-    for child in element.children() {
-      accessibleObject.children.append(
-        makeAccessibleObject(element: child, map: &map)
-      )
-    }
-
-    map[element] = accessibleObject
-    return accessibleObject
-  }
-}
-
-func getAccessibleName(element: Element) -> String? {
-  let document = element.ownerDocument()
-  let id = element.id()
-
-  if element.hasAttr("aria-label") {
-    let label = try? element.attr("aria-label")
-    return label
-  }
-
-  if element.tagName() == "img", element.hasAttr("alt") {
-    let alt = try? element.attr("alt")
-    return alt
-  }
-
-  if element.hasAttr("title") {
-    let title = try? element.attr("title")
-    return title
-  }
-
-  if let label = try? document?.select("label[for=\(id)]") {
-    return try? label.text()
-  }
-
-  return nil
-}
-
-func getAccessibleDescription(element: Element) -> String? {
-  if let description = try? element.attr("aria-description") {
-    return description
-  }
-
-  return nil
 }

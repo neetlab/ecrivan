@@ -6,7 +6,7 @@
 //
 import SwiftSoup
 
-enum Role {
+enum Role: String {
   case document
   case heading
   case paragraph
@@ -18,39 +18,4 @@ enum Role {
   case button
   case generic
   case none
-
-  // HTML-AAM に書かれているやつ。ここでやらんでもよくないか。
-  init(element: Element) {
-    let role = try! element.attr("role")
-    if role == "none" {
-      self =  .none
-      return
-    }
-    
-    let tagName = element.tagName()
-    switch tagName {
-    case "h1":
-      self = .heading
-    case "p":
-      self = .paragraph
-    case "img":
-      self = .image
-    case "form":
-      self = .form
-    case "input":
-      let type = try! element.attr("type")
-      switch type {
-      case "text", "email":
-        self = .textbox
-      case "checkbox":
-        self = .checkbox
-      default:
-        self = .generic
-      }
-    case "button":
-      self = .button
-    default:
-      self = .generic
-    }
-  }
 }
