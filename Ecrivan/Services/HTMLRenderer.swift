@@ -7,6 +7,10 @@
 import AppKit
 import SwiftSoup
 
+struct Stylesheet {
+  var largeText: Bool = false
+}
+
 final class HTMLRenderer {
   let document: Document
   let accessibilityTree: AccessibilityTree
@@ -20,26 +24,26 @@ final class HTMLRenderer {
     return renderNode(self.document)
   }
 
-  private func renderNode(_ node: Node) -> NSView? {
+  private func renderNode(_ node: Node, _ stylesheet: Stylesheet? = nil)
+    -> NSView?
+  {
     if let document = node as? Document {
       return createDocumentView(document)
     }
 
     if let textNode = node as? TextNode {
       if textNode.isBlank() { return nil }
-      return createTextNodeView(textNode)
+      return createTextNodeView(textNode, stylesheet)
     }
 
     if let element = node as? Element {
       switch element.tagName() {
+      case "div", "p", "form":
+        return createContainerView(element)
       case "h1":
         return createH1View(element)
-      case "p":
-        return createParagraphView(element)
       case "img":
         return createImageView(element)
-      case "form":
-        return createFormView(element)
       case "label":
         return createLabelView(element)
       case "input":
@@ -54,9 +58,13 @@ final class HTMLRenderer {
     return nil
   }
 
-  private func renderChildNodesAsSubview(node: Node, view: NSStackView) {
+  private func renderChildNodesAsSubview(
+    node: Node,
+    view: NSStackView,
+    stylesheet: Stylesheet? = nil
+  ) {
     for childNode in node.getChildNodes() {
-      if let subview = renderNode(childNode) {
+      if let subview = renderNode(childNode, stylesheet) {
         view.addArrangedSubview(subview)
       }
     }
@@ -81,7 +89,7 @@ final class HTMLRenderer {
     return view
   }
 
-  private func createH1View(_ element: Element) -> NSView {
+  private func createContainerView(_ element: Element) -> NSView {
     let view = NSStackView()
     view.orientation = .vertical
     view.alignment = .leading
@@ -92,14 +100,15 @@ final class HTMLRenderer {
     return view
   }
 
-  private func createParagraphView(_ element: Element) -> NSView {
+  private func createH1View(_ element: Element) -> NSView {
     let view = NSStackView()
     view.orientation = .vertical
     view.alignment = .leading
     view.distribution = .fill
     let accessibilityObject = accessibilityTree.getAccessibleObject(element)
     accessibilityObject?.mapToView(view)
-    renderChildNodesAsSubview(node: element, view: view)
+    let stylesheet = Stylesheet(largeText: true)
+    renderChildNodesAsSubview(node: element, view: view, stylesheet: stylesheet)
     return view
   }
 
@@ -117,17 +126,6 @@ final class HTMLRenderer {
     accessibilityObject?.mapToView(image)
 
     return image
-  }
-
-  private func createFormView(_ element: Element) -> NSView {
-    let view = NSStackView()
-    view.orientation = .vertical
-    view.alignment = .leading
-    view.distribution = .fill
-    renderChildNodesAsSubview(node: element, view: view)
-    let accessibilityObject = accessibilityTree.getAccessibleObject(element)
-    accessibilityObject?.mapToView(view)
-    return view
   }
 
   private func createLabelView(_ element: Element) -> NSView {
@@ -153,6 +151,18 @@ final class HTMLRenderer {
       let accessibilityObject = accessibilityTree.getAccessibleObject(element)
       accessibilityObject?.mapToView(input)
       return input
+    case "password":
+      let input = NSTextField(labelWithString: "hello")
+      input.isEditable = true
+      input.wantsLayer = true
+      input.layer?.borderWidth = 1
+      input.layer?.borderColor = NSColor.gray.cgColor
+      let accessibilityObject = accessibilityTree.getAccessibleObject(element)
+      accessibilityObject?.mapToView(input)
+      input.setAccessibilityRole(.textField)
+      input.setAccessibilitySubrole(.secureTextField)
+      input.setAccessibilityRoleDescription("secure text field")
+      return input
     case "checkbox":
       let checkbox = NSView()
       checkbox.wantsLayer = true
@@ -172,7 +182,7 @@ final class HTMLRenderer {
     let view = NSStackView()
 
     view.wantsLayer = true
-    view.layer?.backgroundColor = NSColor.gray.cgColor
+    view.layer?.backgroundColor = NSColor.lightGray.cgColor
     view.layer?.borderWidth = 1
     view.layer?.borderColor = NSColor.black.cgColor
     view.edgeInsets = NSEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
@@ -186,7 +196,7 @@ final class HTMLRenderer {
 
   private func createTextNodeView(
     _ textNode: TextNode,
-    stylesheet: Stylesheet? = nil
+    _ stylesheet: Stylesheet? = nil
   )
     -> NSView
   {
@@ -195,10 +205,9 @@ final class HTMLRenderer {
     view.textColor = NSColor.black
 
     if let stylesheet = stylesheet {
-      view.font = .systemFont(
-        ofSize: stylesheet.fontSize,
-        weight: stylesheet.fontWeight,
-      )
+      if stylesheet.largeText {
+        view.font = .systemFont(ofSize: 32, weight: .bold)
+      }
     }
 
     return view

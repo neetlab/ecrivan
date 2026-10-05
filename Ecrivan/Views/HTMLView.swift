@@ -7,11 +7,6 @@
 import SwiftSoup
 import SwiftUI
 
-struct Stylesheet {
-  let fontSize: CGFloat
-  let fontWeight: NSFont.Weight
-}
-
 struct HTMLView: NSViewRepresentable {
   var html: String
 

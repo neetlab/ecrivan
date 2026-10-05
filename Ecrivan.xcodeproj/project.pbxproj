@@ -15,6 +15,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		14E2284D30737C44006262D9 /* Examples */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Examples;
+			sourceTree = "<group>";
+		};
 		14FA2003301CE6C000D077DA /* Ecrivan */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Ecrivan;
@@ -37,6 +42,7 @@
 		14FA1FF8301CE6C000D077DA = {
 			isa = PBXGroup;
 			children = (
+				14E2284D30737C44006262D9 /* Examples */,
 				14FA2003301CE6C000D077DA /* Ecrivan */,
 				14FA2002301CE6C000D077DA /* Products */,
 			);
@@ -66,6 +72,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				14E2284D30737C44006262D9 /* Examples */,
 				14FA2003301CE6C000D077DA /* Ecrivan */,
 			);
 			name = Ecrivan;
