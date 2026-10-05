@@ -20,7 +20,7 @@ struct AccessibilityTree {
     self.root = root
     self.domToAccessibleObject = map
   }
-  
+
   func getAccessibleObject(_ node: Node) -> AccessibleObject? {
     return domToAccessibleObject[node]
   }
@@ -39,6 +39,21 @@ struct AccessibilityTree {
       accessibleObject.`aria-level` = 1
     }
 
+    if element.tagName() == "input", let type = try? element.attr("type"), type == "checkbox"
+    {
+      if let value = try? element.attr("value") {
+        accessibleObject.`aria-checked` = value
+      } else {
+        accessibleObject.`aria-checked` = "false"
+      }
+    }
+
+    if let `aria-hidden` = try? element.attr("aria-hidden"),
+      `aria-hidden` == "true"
+    {
+      accessibleObject.`aria-hidden` = true
+    }
+
     for child in element.children() {
       accessibleObject.children.append(
         makeAccessibleObject(element: child, map: &map)
@@ -53,7 +68,7 @@ struct AccessibilityTree {
 func getAccessibleName(element: Element) -> String? {
   let document = element.ownerDocument()
   let id = element.id()
-  
+
   if element.hasAttr("aria-label") {
     let label = try? element.attr("aria-label")
     return label
@@ -68,7 +83,7 @@ func getAccessibleName(element: Element) -> String? {
     let title = try? element.attr("title")
     return title
   }
-  
+
   if let label = try? document?.select("label[for=\(id)]") {
     return try? label.text()
   }

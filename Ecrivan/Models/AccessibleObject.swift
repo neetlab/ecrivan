@@ -12,11 +12,16 @@ struct AccessibleObject {
   var description: String? = nil
   var children: [AccessibleObject] = []
 
-  //  var `aria-hidden`: Bool = false
   var `aria-level`: Int? = nil
+  var `aria-checked`: String = "false"
+  var `aria-hidden`: Bool = false
 
   // CORE-AAM で対応すべき内容。でもここで書くべきではないような気もする。
   func mapToView(_ view: NSView) {
+    if self.`aria-hidden` {
+      view.setAccessibilityElement(false)
+    }
+    
     if role == .heading, self.`aria-level` != nil {
       view.setAccessibilityElement(true)
       view.setAccessibilityRole(.headingRole)
@@ -57,7 +62,14 @@ struct AccessibleObject {
       view.setAccessibilityElement(true)
       view.setAccessibilityRole(.checkBox)
       view.setAccessibilitySubrole(nil)
-      view.setAccessibilityValue(0)
+      switch self.`aria-checked` {
+      case "true":
+        view.setAccessibilityValue(1)
+      case "mixed":
+        view.setAccessibilityValue(2)
+      default:
+        view.setAccessibilityValue(0)
+      }
     }
 
     if role == .button {

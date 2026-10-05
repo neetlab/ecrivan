@@ -17,9 +17,16 @@ enum Role {
   case checkbox
   case button
   case generic
+  case none
 
   // HTML-AAM に書かれているやつ。ここでやらんでもよくないか。
   init(element: Element) {
+    let role = try! element.attr("role")
+    if role == "none" {
+      self =  .none
+      return
+    }
+    
     let tagName = element.tagName()
     switch tagName {
     case "h1":

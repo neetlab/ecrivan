@@ -14,9 +14,33 @@
 		14FA2001301CE6C000D077DA /* Ecrivan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ecrivan.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		14E228573073843F006262D9 /* Exceptions for "Examples" folder in "Ecrivan" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				003_hidden.html,
+			);
+			target = 14FA2000301CE6C000D077DA /* Ecrivan */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		14E228583073843F006262D9 /* Exceptions for "Examples" folder in "Compile Sources" phase from "Ecrivan" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 14FA1FFD301CE6C000D077DA /* Sources */;
+			membershipExceptions = (
+				003_hidden.html,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		14E2284D30737C44006262D9 /* Examples */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				14E228573073843F006262D9 /* Exceptions for "Examples" folder in "Ecrivan" target */,
+				14E228583073843F006262D9 /* Exceptions for "Examples" folder in "Compile Sources" phase from "Ecrivan" target */,
+			);
 			path = Examples;
 			sourceTree = "<group>";
 		};
