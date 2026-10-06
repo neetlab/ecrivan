@@ -17,7 +17,10 @@ struct HTMLView: NSViewRepresentable {
 
   func updateNSView(_ stack: NSStackView, context: Context) {
     stack.views.forEach { $0.removeFromSuperview() }
-    let htmlRenderer = HTMLRenderer(content: html)
+    let htmlRenderer = HTMLRenderer(
+      content: html,
+      disableMapping: false
+    )
     if let view = htmlRenderer.render() {
       stack.addArrangedSubview(view)
     }

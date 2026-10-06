@@ -14,10 +14,12 @@ struct Stylesheet {
 final class HTMLRenderer {
   let document: Document
   let accessibilityTree: AccessibilityTree
+  let disableMapping: Bool
 
-  init(content: String) {
+  init(content: String, disableMapping: Bool = false) {
     self.document = try! SwiftSoup.parse(content)
     self.accessibilityTree = AccessibilityTree(element: document)
+    self.disableMapping = disableMapping
   }
 
   func render() -> NSView? {
@@ -94,7 +96,9 @@ final class HTMLRenderer {
     view.orientation = .vertical
     view.alignment = .leading
     view.distribution = .fill
-    accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
+    if !self.disableMapping {
+      accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
+    }
     renderChildNodesAsSubview(node: element, view: view)
     return view
   }
@@ -104,7 +108,9 @@ final class HTMLRenderer {
     view.orientation = .vertical
     view.alignment = .leading
     view.distribution = .fill
-    accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
+    if !self.disableMapping {
+      accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
+    }
     let stylesheet = Stylesheet(largeText: true)
     renderChildNodesAsSubview(node: element, view: view, stylesheet: stylesheet)
     return view
@@ -120,7 +126,9 @@ final class HTMLRenderer {
     }
     view.translatesAutoresizingMaskIntoConstraints = false
 
-    accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
+    if !self.disableMapping {
+      accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
+    }
 
     return view
   }
@@ -128,10 +136,12 @@ final class HTMLRenderer {
   private func createLabelView(_ element: Element) -> NSView {
     let view = NSStackView()
     renderChildNodesAsSubview(node: element, view: view)
-    accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
-    view.setAccessibilityRole(.group)
-    view.setAccessibilitySubrole(nil)
-    view.setAccessibilityRoleDescription("グループ")
+    if !self.disableMapping {
+      accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
+      view.setAccessibilityRole(.group)
+      view.setAccessibilitySubrole(nil)
+      view.setAccessibilityRoleDescription("グループ")
+    }
     return view
   }
 
@@ -144,7 +154,9 @@ final class HTMLRenderer {
       view.wantsLayer = true
       view.layer?.borderWidth = 1
       view.layer?.borderColor = NSColor.gray.cgColor
-      accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
+      if !self.disableMapping {
+        accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
+      }
       return view
     case "password":
       let view = NSTextField(labelWithString: "hello")
@@ -152,10 +164,12 @@ final class HTMLRenderer {
       view.wantsLayer = true
       view.layer?.borderWidth = 1
       view.layer?.borderColor = NSColor.gray.cgColor
-      accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
-      view.setAccessibilityRole(.textField)
-      view.setAccessibilitySubrole(.secureTextField)
-      view.setAccessibilityRoleDescription("secure text field")
+      if !self.disableMapping {
+        accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
+        view.setAccessibilityRole(.textField)
+        view.setAccessibilitySubrole(.secureTextField)
+        view.setAccessibilityRoleDescription("secure text field")
+      }
       return view
     case "checkbox":
       let view = NSView()
@@ -164,7 +178,9 @@ final class HTMLRenderer {
       view.layer?.borderColor = NSColor.gray.cgColor
       view.widthAnchor.constraint(equalToConstant: 16).isActive = true
       view.heightAnchor.constraint(equalToConstant: 16).isActive = true
-      accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
+      if !self.disableMapping {
+        accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
+      }
       return view
     default:
       return nil
@@ -181,7 +197,9 @@ final class HTMLRenderer {
     view.edgeInsets = NSEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
     view.setHuggingPriority(.required, for: .horizontal)
 
-    accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
+    if !self.disableMapping {
+      accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
+    }
     renderChildNodesAsSubview(node: element, view: view)
 
     return view
