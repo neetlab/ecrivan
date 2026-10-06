@@ -175,10 +175,11 @@ final class HTMLRenderer {
     let view = NSStackView()
 
     view.wantsLayer = true
-    view.layer?.backgroundColor = NSColor.lightGray.cgColor
+    view.layer?.backgroundColor = NSColor(white: 0.92, alpha: 1).cgColor
     view.layer?.borderWidth = 1
     view.layer?.borderColor = NSColor.black.cgColor
     view.edgeInsets = NSEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
+    view.setHuggingPriority(.required, for: .horizontal)
 
     accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
     renderChildNodesAsSubview(node: element, view: view)
