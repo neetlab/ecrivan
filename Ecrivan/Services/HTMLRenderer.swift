@@ -81,6 +81,7 @@ final class HTMLRenderer {
     view.layer?.backgroundColor = NSColor.white.cgColor
 
     let title = try! document.title()
+    view.setAccessibilityElement(true)
     view.setAccessibilityRole(.webAreaRole)
     view.setAccessibilityLabel(title)
 
