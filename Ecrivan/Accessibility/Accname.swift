@@ -6,39 +6,131 @@
 //
 import SwiftSoup
 
-func getTextualEquivalent(_ element: Element) -> String? {
-  let document = element.ownerDocument()
-  let id = element.id()
+extension Node {
+  func getTextualEquivalent(role: Role? = nil) -> String? {
+    // 2.2 LabelledBy
+    if let name = self.labelledBy() {
+      return name
+    }
 
-  if element.hasAttr("aria-label") {
-    let label = try? element.attr("aria-label")
-    return label
+    // 2.4 AriaLabel
+    if let name = self.ariaLabel() {
+      return name
+    }
+
+    // 2.5 Host Language Label
+    if let name = self.hostLanguageLabel() {
+      return name
+    }
+
+    // 2.6 Name From Content
+    if let name = self.nameFromContent(role: role) {
+      return name
+    }
+
+    // 2.7 Text Node
+    if let textNode = self as? TextNode {
+      return textNode.text()
+    }
+
+    // 2.9 Tooltip
+    if self.hasAttr("title") {
+      let title = try? self.attr("title")
+      return title
+    }
+
+    return nil
   }
 
-  if element.tagName() == "img", element.hasAttr("alt") {
-    let alt = try? element.attr("alt")
-    return alt
+  private func labelledBy() -> String? {
+    if !self.hasAttr("aria-labelledby") {
+      return nil
+    }
+
+    guard let document = self.ownerDocument() else {
+      return nil
+    }
+    guard let labelledByAttr = try? self.attr("aria-labelledby") else {
+      return nil
+    }
+
+    let labelledByIds = labelledByAttr.split(separator: " ")
+    var labels: [String] = []
+
+    for labelledById in labelledByIds {
+      guard
+        let labelElement = try? document.getElementById(String(labelledById))
+      else {
+        continue
+      }
+      guard let label = labelElement.getTextualEquivalent() else {
+        continue
+      }
+      labels.append(label)
+    }
+
+    return labels.joined(separator: " ")
   }
 
-  if element.hasAttr("title") {
-    let title = try? element.attr("title")
-    return title
+  private func ariaLabel() -> String? {
+    if self.hasAttr("aria-label") {
+      let label = try? self.attr("aria-label")
+      return label
+    }
+    return nil
   }
 
-  if let label = try? document?.select("label[for=\(id)]") {
-    return try? label.text()
+  private func hostLanguageLabel() -> String? {
+    guard let document = self.ownerDocument() else {
+      return nil
+    }
+
+    if let element = self as? Element, element.tagName() == "img",
+      self.hasAttr("alt")
+    {
+      let alt = try? self.attr("alt")
+      return alt
+    }
+    if let element = self as? Element,
+      element.tagName() == "input" || element.tagName() == "textarea"
+    {
+      guard let label = try? document.select("label[for=\(element.id())]")
+      else {
+        return nil
+      }
+      return label.first()?.getTextualEquivalent()
+    }
+
+    return nil
   }
 
-  return try? element.text()
+  private func nameFromContent(role: Role?) -> String? {
+    if role?.nameFrom != .contentsOrAuthor, let element = self as? Element,
+      element.tagName() != "label"
+    {
+      return nil
+    }
+    var accumulatedText = ""
+    for node in self.getChildNodes() {
+      let result = node.getTextualEquivalent()
+      if let result = result {
+        accumulatedText += result
+      }
+    }
+    if accumulatedText == "" {
+      return nil
+    }
+    return accumulatedText
+  }
 }
 
-extension Element {
-  func getAccessibleName() -> String? {
-    return getTextualEquivalent(self)
+extension AccessibleObject {
+  var name: String? {
+    return self.node.getTextualEquivalent(role: self.role)
   }
-  
-  func getAccessibleDescription() -> String? {
-    if let description = try? self.attr("aria-description") {
+
+  var description: String? {
+    if let description = try? self.node.attr("aria-description") {
       return description
     }
     return nil

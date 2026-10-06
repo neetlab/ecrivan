@@ -38,15 +38,15 @@ extension Element {
 }
 
 extension AccessibleObject {
+  // ここがいちばん汚い。なんとかしたい気持ちはある。
   init(_ element: Element, _ accessibilityTree: AccessibilityTree) {
+    self.node = element
+
     if let role = try? element.attr("role"), let role = Role(rawValue: role) {
       self.role = role
     } else {
       self.role = element.getImplicitRole() ?? .generic
     }
-
-    self.name = element.getAccessibleName()
-    self.description = element.getAccessibleDescription()
 
     /// HTML-AAM § 3.5.47
     /// https://www.w3.org/TR/html-aam-1.0/#el-h1-h6
@@ -74,9 +74,11 @@ extension AccessibleObject {
     }
     
     accessibilityTree.setAccessibleObject(element, self)
-    
-    for child in element.children() {
-      self.children.append(AccessibleObject(child, accessibilityTree))
+
+    if !self.`aria-hidden` {
+      for child in element.children() {
+        self.children.append(AccessibleObject(child, accessibilityTree))
+      }
     }
   }
 }
@@ -84,10 +86,15 @@ extension AccessibleObject {
 extension AccessibleObject {
   func mapToAccessibilityAPI(_ view: NSView) {
     if self.`aria-hidden` {
+      view.setAccessibilityElement(false)
+      view.setAccessibilityChildren([])
+    }
+    
+    if self.role.childrenPresentational {
       view.setAccessibilityChildren([])
     }
 
-    if role == .heading, self.`aria-level` != nil {
+    if role == .heading {
       view.setAccessibilityElement(true)
       view.setAccessibilityRole(.headingRole)
       view.setAccessibilitySubrole(nil)

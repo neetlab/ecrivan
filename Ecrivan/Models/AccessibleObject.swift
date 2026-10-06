@@ -10,9 +10,8 @@ import SwiftSoup
 // Children Presentational, Name From, とかはこのへんで定義して
 // Accessibility API への写像を楽に導出できるようにすべきなのかなあ？
 struct AccessibleObject {
-  var role: Role
-  var name: String? = nil
-  var description: String? = nil
+  let node: Element
+  let role: Role
   var children: [AccessibleObject] = []
 
   var `aria-level`: Int? = nil
