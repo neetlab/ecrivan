@@ -150,7 +150,7 @@ final class HTMLRenderer {
     let type = try! element.attr("type")
     switch type {
     case "text", "email":
-      let view = NSTextField(labelWithString: "hello")
+      let view = NSTextField(labelWithString: "")
       view.isEditable = true
       view.wantsLayer = true
       view.layer?.borderWidth = 1
@@ -160,16 +160,18 @@ final class HTMLRenderer {
       }
       return view
     case "password":
-      let view = NSTextField(labelWithString: "hello")
+      let view = NSTextField(labelWithString: "")
       view.isEditable = true
       view.wantsLayer = true
       view.layer?.borderWidth = 1
       view.layer?.borderColor = NSColor.gray.cgColor
       if !self.disableMapping {
-        accessibilityTree.getAccessibleObject(element)?.mapToAccessibilityAPI(view)
+        let accessibleObject = accessibilityTree.getAccessibleObject(element)!
+        accessibleObject.mapToAccessibilityAPI(view)
         view.setAccessibilityRole(.textField)
         view.setAccessibilitySubrole(.secureTextField)
         view.setAccessibilityRoleDescription("secure text field")
+        view.setAccessibilityLabel(accessibleObject.name)
       }
       return view
     case "checkbox":
